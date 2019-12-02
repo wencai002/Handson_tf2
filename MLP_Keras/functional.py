@@ -2,6 +2,7 @@ from tensorflow import keras
 from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 housing = fetch_california_housing()
 
@@ -28,12 +29,28 @@ X_train_A, X_train_B = X_train[:,:5], X_train[:,2:]
 X_valid_A, X_valid_B = X_valid[:,:5], X_valid[:,2:]
 X_test_A, X_test_B = X_test[:,:5], X_test[:,2:]
 
-checkpoint_cb = keras.callbacks.ModelCheckpoint("./model/my_keras_model.h5",save_best_only=True)
+# checkpoint_cb = keras.callbacks.ModelCheckpoint("./model/my_keras_model.h5",save_best_only=True)
+# history = model.fit([X_train_A,X_train_B],[y_train,y_train],
+#                     epochs=20,
+#                     validation_data=([X_valid_A,X_valid_B],[y_valid,y_valid]),
+#                     callbacks=[checkpoint_cb])
+# model = keras.models.load_model("./model/my_keras_model.h5")
+
+import os
+root_logdir = os.path.join(os.curdir,"my_logs")
+
+def get_run_logdir():
+    import time
+    run_id = time.strftime("run_%Y_%m_%d-%H_%M_%S")
+    return os.path.join(root_logdir, run_id)
+
+run_logdir = get_run_logdir()
+
+tensorboard_cb = keras.callbacks.TensorBoard(run_logdir)
 history = model.fit([X_train_A,X_train_B],[y_train,y_train],
                     epochs=20,
                     validation_data=([X_valid_A,X_valid_B],[y_valid,y_valid]),
-                    callbacks=[checkpoint_cb])
-model = keras.models.load_model("./model/my_keras_model.h5")
+                    callbacks=[tensorboard_cb])
 
 mse_test = model.evaluate([X_test_A,X_test_B],[y_test,y_test])
 print(mse_test)
