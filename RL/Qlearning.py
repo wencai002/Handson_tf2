@@ -1,13 +1,14 @@
 import gym
 from collections import deque
 import numpy as np
+import tensorflow as tf
 from tensorflow import keras
 
 env = gym.make("CartPole-v0")
 input_shape = 4
 n_outputs = 2
 
-model = keras.model.Sequential([
+model = keras.models.Sequential([
     keras.layers.Dense(32, activation = "elu", input_shape=[input_shape]),
     keras.layers.Dense(32, activation = "elu"),
     keras.layers.Dense(n_outputs)
@@ -33,7 +34,7 @@ def sample_experiences(batch_size):
 def play_one_step(env, state, epsilon):
     action = epsilon_greedy_policy(state, epsilon)
     next_state, reward, done, info = env.step(action)
-    repay_buffer.append((state, action, reward, next_state, done))
+    replay_buffer.append((state, action, reward, next_state, done))
     return next_state, reward, done, info
 
 batch_size = 32
@@ -56,10 +57,11 @@ def training_step(batch_size):
         Q_values = tf.reduce_sum(all_Q_values*next_mask, axis=1, keepdims=True)
         loss = tf.reduce_mean(loss_fn(target_Q_values, Q_values))
     grads = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(grads, model.trainable_variables)
+    optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
 
 ## then you do the real training
+
 nr_episode = 10000
 nr_step = 200
 
@@ -74,7 +76,7 @@ nr_step = 200
 rewards = []
 best_score = 0
 
-for epsiode in range(nr_episode):
+for episode in range(nr_episode):
 ## setup the environment
     obs = env.reset()
     for step in range(nr_step):
