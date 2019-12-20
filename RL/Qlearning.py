@@ -14,7 +14,7 @@ model = keras.models.Sequential([
     keras.layers.Dense(n_outputs)
 ])
 
-def epsilon_greedy_policy(state, epsilon=0):
+def epsilon_greedy_policy(state, epsilon=0.05):
     if np.random.rand() < epsilon:
         return np.random.randint(2)
     else:
